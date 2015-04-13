@@ -75,7 +75,7 @@ public class SimpleScheduler implements Scheduler,Runnable {
     }
 
     private boolean isNeedSchedule(JobSchedule jobSchedule) {
-        return jobSchedule.getStart_datetime().getTime() - System.currentTimeMillis() < 2 * 1000;
+        return jobSchedule.getSchedule_datetime().getTime() - System.currentTimeMillis() < 2 * 1000;
     }
 
 }

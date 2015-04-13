@@ -7,12 +7,14 @@ import java.sql.Timestamp;
  */
 public class JobSchedule {
     long id;
-    Timestamp start_datetime;
+    Timestamp created_datetime;
+    Timestamp schedule_datetime;
     long job_id;
     String job_group_name;
     int status;
     int retried;
     String run_as;
+    long next_job_schedule_id;
 
     public static final int JOB_SCHEDULE_STATUS_PENDING = 0;
     public static final int JOB_SCHEDULE_STATUS_RUNNING = 1;
@@ -27,12 +29,28 @@ public class JobSchedule {
         this.id = id;
     }
 
-    public Timestamp getStart_datetime() {
-        return start_datetime;
+    public long getNext_job_schedule_id() {
+        return next_job_schedule_id;
     }
 
-    public void setStart_datetime(Timestamp start_datetime) {
-        this.start_datetime = start_datetime;
+    public void setNext_job_schedule_id(long next_job_schedule_id) {
+        this.next_job_schedule_id = next_job_schedule_id;
+    }
+
+    public Timestamp getCreated_datetime() {
+        return created_datetime;
+    }
+
+    public void setCreated_datetime(Timestamp created_datetime) {
+        this.created_datetime = created_datetime;
+    }
+
+    public Timestamp getSchedule_datetime() {
+        return schedule_datetime;
+    }
+
+    public void setSchedule_datetime(Timestamp schedule_datetime) {
+        this.schedule_datetime = schedule_datetime;
     }
 
     public long getJob_id() {

@@ -29,15 +29,17 @@ CREATE TABLE `job_group` (
 
 CREATE TABLE `job_schedule` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `start_datetime` DATETIME NOT NULL,
-    `time_zone` int(8) DEFAULT 0.
+    `created_datetime` DATETIME NOT NULL,
+    `schedule_datetime` DATETIME NOT NULL
+    `time_zone` int(8) DEFAULT 0,
     `job_id` bigint(20) NOT NULL,
     `job_group_name` varchar(64) NOT NULL,
     `status` int(8) NOT NULL,
     `retried` int(8),
     `run_as` varchar(64),
+    `next_job_schedule_id` bigint(20) DEFAULT 0,
     PRIMARY KEY(`id`),
-    INDEX index_id_starttime (job_id, start_datetime)
+    INDEX index_created_datetime(job_id, created_datetime)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `job_transaction` (
