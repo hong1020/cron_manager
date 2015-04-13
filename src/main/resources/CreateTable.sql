@@ -1,17 +1,17 @@
 CREATE TABLE `job` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
     `title` varchar(64) NOT NULL,
-    `description` varchar(256) NOT NULL,
+    `description` varchar(256) DEFAULT '',
     `cron_expression` varchar(128) NOT NULL,
-    `time_zone` int(8) DEFAULT NULL,
+    `time_zone` int(8) DEFAULT 8,
     `timeout` int(16) DEFAULT 0,
     `retry` int(8) DEFAULT 0,
     `retry_interval` int(8) DEFAULT 0,
     `run_type` int(8) DEFAULT 0,
     `fail_strategy` int(8) DEFAULT 0,
     `job_group_id` bigint(20) NOT NULL,
-    `status` int(8) NOT NULL,
-    `run_as` varchar(64),
+    `status` int(8) DEFAULT 0,
+    `run_as` varchar(64) DEFAULT '',
     `last_schedule_id` bigint(20),
     `created_date` date,
     `enable_date` date,
@@ -29,7 +29,8 @@ CREATE TABLE `job_group` (
 
 CREATE TABLE `job_schedule` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `start_datetime` TIMESTAMP NOT NULL,
+    `start_datetime` DATETIME NOT NULL,
+    `time_zone` int(8) DEFAULT 0.
     `job_id` bigint(20) NOT NULL,
     `job_group_name` varchar(64) NOT NULL,
     `status` int(8) NOT NULL,
@@ -41,8 +42,9 @@ CREATE TABLE `job_schedule` (
 
 CREATE TABLE `job_transaction` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
-    `start_datetime` TIMESTAMP NOT NULL,
-    `end_datetime` TIMESTAMP NOT NULL,
+    `start_datetime` DATETIME NOT NULL,
+    `end_datetime` DATETIME NOT NULL,
+    `time_zone` int(8) DATETIME 0,
     `job_id` bigint(20) NOT NULL,
      `job_schedule_id` bigint(20) NOT NULL,
     `host` varchar(64),
