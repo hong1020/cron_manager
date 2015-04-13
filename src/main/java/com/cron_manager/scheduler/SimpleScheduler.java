@@ -1,16 +1,13 @@
 package com.cron_manager.scheduler;
 
-import com.cron_manager.jobgroup.JobGroupManager;
 import com.cron_manager.manager.JobScheduleManager;
-import com.cron_manager.mapper.JobScheduleMapper;
 import com.cron_manager.model.JobSchedule;
-import com.cron_manager.queue.JobQueue;
+import com.cron_manager.queue.JobExecuteQueue;
 
+import com.cron_manager.queue.JobScheduleQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.sql.Timestamp;
 
 /**
  * Created by hongcheng on 4/12/15.
@@ -20,46 +17,49 @@ public class SimpleScheduler implements Scheduler,Runnable {
 
     ScheduleTime scheduleTime = new ScheduleTimeQuartz();
 
-    @Autowired
     JobScheduleManager jobScheduleManager;
+    JobScheduleQueue jobScheduleQueue;
 
-    @Autowired
-    JobGroupManager jobGroupManager;
+    //mandatory
+    String schedulerGroup;
 
-    @Autowired
-    JobQueue jobQueue;
+    public SimpleScheduler(String schedulerGroup, JobScheduleManager jobScheduleManager, JobScheduleQueue jobScheduleQueue) {
+        this.schedulerGroup = schedulerGroup;
+        this.jobScheduleManager = jobScheduleManager;
+        this.jobScheduleQueue = jobScheduleQueue;
+    }
 
     @Override
     public void run() {
+        //register the schedule group
+        jobScheduleQueue.addScheduleGroup(schedulerGroup);
+
         while (!Thread.currentThread().isInterrupted()) {
-            String jobGroupName = jobGroupManager.takeJobGroupToken();
-            if (jobGroupName == null) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            } else {
-                schedule(jobQueue, jobGroupName);
+            schedule(jobScheduleQueue, schedulerGroup);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
     }
 
 
     @Override
-    public void schedule(JobQueue jobQueue, String group) {
+    public void schedule(JobScheduleQueue jobScheduleQueue, String schedulerGroup) {
         int retried = 3;
         while (retried > 0) {
             try {
-                JobSchedule jobSchedule = jobQueue.offerSchedule(group);
-                if (isNeedSchedule(jobSchedule)) {
+                JobSchedule jobSchedule = jobScheduleQueue.offerSchedule(schedulerGroup);
+                if (jobSchedule != null && isNeedSchedule(jobSchedule)) {
                     logger.info("start schedule for " + jobSchedule.getId());
                     try {
                         JobSchedule nextJobSchedule = jobScheduleManager.createNextSchedule(jobSchedule);
-
-                        jobQueue.addSchedule(group, nextJobSchedule);
-                        jobQueue.moveScheduleToExecute(group, jobSchedule);
-                        logger.info("successful schedule for " + jobSchedule.getId());
+                        if (nextJobSchedule != null) {
+                            jobScheduleQueue.addSchedule(schedulerGroup, nextJobSchedule);
+                            jobScheduleQueue.moveScheduleToExecute(schedulerGroup, jobSchedule);
+                            logger.info("successful schedule for " + jobSchedule.getId());
+                        }
                     } catch (Exception e) {
                         logger.info("failed schedule for " + jobSchedule.getId() + " " + e.getMessage());
                         throw e;
@@ -69,7 +69,7 @@ public class SimpleScheduler implements Scheduler,Runnable {
                 }
             } catch (Exception e) {
                 retried--;
-                logger.info("schedule error of group: " + group + " " + e.getMessage());
+                logger.info("schedule error of group: " + schedulerGroup + " " + e.getMessage());
             }
         }
     }
