@@ -68,6 +68,27 @@
           <artifactId>slf4j-log4j12</artifactId>
           <version>1.6.1</version>
       </dependency>
+
+
+      <dependency>
+          <groupId>redis.clients</groupId>
+          <artifactId>jedis</artifactId>
+          <version>2.6.0</version>
+      </dependency>
+
+      <dependency>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-mapper-asl</artifactId>
+          <version>1.9.13</version>
+      </dependency>
+
+      <dependency>
+          <groupId>org.quartz-scheduler</groupId>
+          <artifactId>quartz</artifactId>
+          <version>2.2.1</version>
+      </dependency>
+
+
   </dependencies>
   <build>
     <finalName>CronManagerWebsite</finalName>

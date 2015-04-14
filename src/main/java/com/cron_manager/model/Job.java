@@ -9,7 +9,7 @@ public class Job {
     long id;
     String title;
     String description;
-    String cron_description;
+    String cron_expression;
     int timezone;
     int timeout;
     int retry;
@@ -61,12 +61,12 @@ public class Job {
         this.description = description;
     }
 
-    public String getCron_description() {
-        return cron_description;
+    public String getCron_expression() {
+        return cron_expression;
     }
 
-    public void setCron_description(String cron_description) {
-        this.cron_description = cron_description;
+    public void setCron_expression(String cron_expression) {
+        this.cron_expression = cron_expression;
     }
 
     public int getTimezone() {

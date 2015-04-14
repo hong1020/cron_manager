@@ -13,10 +13,10 @@ public interface JobScheduleQueue {
      * @param scheduleGroup
      * @param jobSchedule
      */
-    public void addSchedule(String scheduleGroup, JobSchedule jobSchedule);
+    public void addSchedule(String scheduleGroup, JobSchedule jobSchedule) throws Exception;
 
-    public JobSchedule offerSchedule(String scheduleGroup);
-    public JobSchedule takeSchedule(String scheduleGroup);
+    public JobSchedule offerSchedule(String scheduleGroup) throws Exception;;
+    public JobSchedule takeSchedule(String scheduleGroup) throws Exception;;
 
     public void addScheduleGroup(String scheduleGroup);
     public List<String> getScheduleGroupList(String scheduleGroup);
@@ -26,5 +26,5 @@ public interface JobScheduleQueue {
      * @param scheduleGroup
      * @param jobSchedule
      */
-    public void moveScheduleToExecute(String scheduleGroup, JobSchedule jobSchedule);
+    public void moveScheduleToExecute(String scheduleGroup, JobSchedule jobSchedule) throws Exception;
 }
