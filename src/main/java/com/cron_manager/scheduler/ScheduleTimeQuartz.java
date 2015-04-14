@@ -15,15 +15,13 @@ import java.util.TimeZone;
  */
 public class ScheduleTimeQuartz implements ScheduleTime{
     @Override
-    public Timestamp getNextScheduleTime(JobSchedule jobSchedule) {
-        Job job = null;
-        //TODO
+    public Timestamp getNextScheduleTime(Job job, Date dateTime) {
         try {
             CronExpression cronExpression = new CronExpression(job.getCron_expression());
             TimeZone timeZone = TimeZone.getTimeZone(TimeZone.getAvailableIDs(job.getTimezone())[0]);
             cronExpression.setTimeZone(timeZone);
 
-            Date nextDate = cronExpression.getTimeAfter(jobSchedule.getStart_datetime());
+            Date nextDate = cronExpression.getTimeAfter(dateTime);
             Timestamp nextTimeStamp = new Timestamp(nextDate.getTime());
             return  nextTimeStamp;
         } catch (ParseException e) {

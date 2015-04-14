@@ -9,7 +9,7 @@ CREATE TABLE `job` (
     `retry_interval` int(8) DEFAULT 0,
     `run_type` int(8) DEFAULT 0,
     `fail_strategy` int(8) DEFAULT 0,
-    `job_group_id` bigint(20) NOT NULL,
+    `job_group_name` varchar(64) NOT NULL,
     `status` int(8) DEFAULT 0,
     `run_as` varchar(64) DEFAULT '',
     `last_schedule_id` bigint(20),

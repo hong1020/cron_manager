@@ -3,6 +3,7 @@ package com.cron_manager.manager;
 import com.cron_manager.mapper.JobMapper;
 import com.cron_manager.mapper.JobScheduleMapper;
 import com.cron_manager.model.Job;
+import com.cron_manager.model.JobGroup;
 import com.cron_manager.model.JobSchedule;
 import com.cron_manager.scheduler.ScheduleTime;
 import com.cron_manager.scheduler.ScheduleTimeQuartz;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Created by hongcheng on 4/12/15.
@@ -23,9 +25,13 @@ public class JobScheduleManager {
     @Autowired
     JobMapper jobMapper;
 
+    @Transactional
     public JobSchedule createJobSchedule(Job job) {
-        //TODO
-        return null;
+        JobSchedule jobSchedule = doCreateJobSchedule(job, new Date(System.currentTimeMillis()));
+        if (jobSchedule != null) {
+            jobMapper.updateSchedule(jobSchedule.getJob_id(), jobSchedule.getId());
+        }
+        return jobSchedule;
     }
 
     /**
@@ -36,17 +42,37 @@ public class JobScheduleManager {
     @Transactional
     public JobSchedule createNextSchedule(JobSchedule jobSchedule) {
         JobSchedule curJobSchedule = jobScheduleMapper.findById(jobSchedule.getId());
-        if (curJobSchedule.getNext_job_schedule_id() != 0) {
+        if (curJobSchedule != null && curJobSchedule.getNext_job_schedule_id() != 0) {
             //already scheduled
             return jobScheduleMapper.findById(curJobSchedule.getNext_job_schedule_id());
         }
 
-        JobSchedule nextJobSchedule = curJobSchedule;
-        nextJobSchedule.setCreated_datetime(new Timestamp(System.currentTimeMillis()));
-        nextJobSchedule.setSchedule_datetime(scheduleTime.getNextScheduleTime(jobSchedule));
-        nextJobSchedule.setId(jobScheduleMapper.insert(nextJobSchedule));
-        jobScheduleMapper.updateNextScheduleId(jobSchedule.getId(), nextJobSchedule.getId());
-        jobMapper.updateSchedule(jobSchedule.getJob_id(), jobSchedule.getId());
-        return nextJobSchedule;
+        Job job = jobMapper.findById(jobSchedule.getJob_id());
+        if (job != null) {
+            JobSchedule nextJobSchedule = doCreateJobSchedule(job, jobSchedule.getSchedule_datetime());
+            if (nextJobSchedule != null) {
+                jobScheduleMapper.updateNextScheduleId(jobSchedule.getId(), nextJobSchedule.getId());
+                jobMapper.updateSchedule(jobSchedule.getJob_id(), jobSchedule.getId());
+                return nextJobSchedule;
+            }
+        }
+
+        return null;
+    }
+
+    private JobSchedule doCreateJobSchedule(Job job, Date datetime) {
+        if (job.getStatus() == Job.JOB_STATUS_INACTIVE) {
+            return  null;
+        }
+
+        JobSchedule jobSchedule = new JobSchedule();
+        jobSchedule.setCreated_datetime(new Timestamp(System.currentTimeMillis()));
+        jobSchedule.setSchedule_datetime(scheduleTime.getNextScheduleTime(job, datetime));
+        jobSchedule.setJob_id(job.getId());
+        jobSchedule.setJob_group_name(job.getJob_group_name());
+        jobSchedule.setRun_as(job.getRun_as());
+        jobSchedule.setId(jobScheduleMapper.insert(jobSchedule));
+
+        return jobSchedule;
     }
 }

@@ -16,7 +16,7 @@ public class Job {
     int retry_interval;
     int run_type;
     int fail_strategy;
-    long job_group_id;
+    String job_group_name;
     int status;
     String run_as;
     long last_schedule_id;
@@ -117,12 +117,12 @@ public class Job {
         this.fail_strategy = fail_strategy;
     }
 
-    public long getJob_group_id() {
-        return job_group_id;
+    public String getJob_group_name() {
+        return job_group_name;
     }
 
-    public void setJob_group_id(long job_group_id) {
-        this.job_group_id = job_group_id;
+    public void setJob_group_name(String job_group_name) {
+        this.job_group_name = job_group_name;
     }
 
     public int getStatus() {

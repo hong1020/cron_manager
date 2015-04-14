@@ -43,7 +43,6 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
 
     @Override
     public void addSchedule(final String scheduleGroup, final JobSchedule jobSchedule) throws Exception{
-        //TODO - is a time zone?
         final double timeScore = jobSchedule.getSchedule_datetime().getTime();
         final String jobScheduleJson = scheduleToString(jobSchedule);
 
@@ -73,6 +72,7 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
         return (JobSchedule) redisService.executeCommand(command);
     }
 
+    //TODO - no take right?
     @Override
     public JobSchedule takeSchedule(String scheduleGroup) {
         return null;
