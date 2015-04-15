@@ -7,6 +7,8 @@ import com.cron_manager.redis.RedisException;
 import com.cron_manager.redis.RedisService;
 import com.cron_manager.redis.RedisTransactionCommand;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
@@ -16,6 +18,7 @@ import java.util.Set;
 /**
  * Created by honcheng on 2015/4/14.
  */
+@Service
 public class JobScheduleQueueRedis implements  JobScheduleQueue {
     public static final String KEY_SCHEDULE = "schedule";
     public static final String KEY_EXECUTE = "execute";
@@ -28,6 +31,7 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
         return KEY_EXECUTE + ":" + group;
     }
 
+    @Autowired
     RedisService redisService;
 
     public String scheduleToString(JobSchedule jobSchedule) throws Exception {

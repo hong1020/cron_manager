@@ -20,8 +20,13 @@ public class JobScheduleChangeManager {
     @Autowired
     JobScheduleQueue jobScheduleQueue;
     @Autowired
-    JobOpenTaskMapper jobOpenTaskMapper;
+    JobScheduleManager jobScheduleManager;
 
+    /**
+     * This is the right job activate, which also create the schedule.
+     * Not in a transaction since queue is also involved.
+     * @param job
+     */
     public void activateJob(Job job) {
         JobSchedule jobSchedule = jobManager.activate(job);
 
@@ -32,9 +37,18 @@ public class JobScheduleChangeManager {
                 jobOpenTaskManager.deleteTask(jobSchedule.getId());
                 break;
             } catch (Exception e) {
-                retry --;
+                retry--;
             }
         }
+    }
+
+    /**
+     * used to re add the schedule in the queue.
+     * @param jobScheduleId
+     */
+    public void reAddSchedule(long jobScheduleId) throws Exception{
+        JobSchedule jobSchedule = jobScheduleManager.findById(jobScheduleId);
+        jobScheduleQueue.addSchedule(getScheduleGroup(jobSchedule), jobSchedule);
     }
 
     private String getScheduleGroup(JobSchedule jobSchedule) {

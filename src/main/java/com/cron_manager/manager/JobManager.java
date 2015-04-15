@@ -47,10 +47,20 @@ public class JobManager {
         jobMapper.delete(job.getId());
     }
 
+    /**
+     * This job only handles activating in the database. Job is not scheduled yet in the queue.
+     * @param job
+     * @return
+     */
     @Transactional
     public JobSchedule activate(Job job) {
         jobMapper.updateStatus(job.getId(), Job.JOB_STATUS_ACTIVE);
         JobSchedule schedule = jobScheduleManager.createJobSchedule(job);
         return schedule;
+    }
+
+    @Transactional
+    public void deactivate(Job job) {
+        jobMapper.updateStatus(job.getId(), Job.JOB_STATUS_INACTIVE);
     }
 }

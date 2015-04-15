@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Created by hongcheng on 4/12/15.
  */
 public class SimpleScheduler implements Scheduler,Runnable {
-    Logger logger = LoggerFactory.getLogger(SimpleScheduler.class);
+    public static final Logger logger = LoggerFactory.getLogger(SimpleScheduler.class);
 
     ScheduleTime scheduleTime = new ScheduleTimeQuartz();
 

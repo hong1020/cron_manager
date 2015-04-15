@@ -32,6 +32,11 @@ public class JobScheduleManager {
     @Autowired
     JobOpenTaskMapper jobOpenTaskMapper;
 
+    @Transactional(readOnly = true)
+    public JobSchedule findById(long id) {
+        return jobScheduleMapper.findById(id);
+    }
+
     @Transactional
     public JobSchedule createJobSchedule(Job job) {
         JobSchedule jobSchedule = doCreateJobSchedule(job, new Date(System.currentTimeMillis()));
@@ -83,7 +88,7 @@ public class JobScheduleManager {
         JobOpenTask jobOpenTask = new JobOpenTask();
         jobOpenTask.setJob_id(job.getId());
         jobOpenTask.setReference_id(jobSchedule.getId());
-        jobOpenTask.setType(JobOpenTask.JOB_OPEN_TASK_TYPE_SCHEDULE);
+        jobOpenTask.setType(JobOpenTask.JOB_OPEN_TASK_TYPE_CREATE_SCHEDULE);
         jobOpenTaskMapper.insert(jobOpenTask);
 
         return jobSchedule;

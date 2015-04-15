@@ -17,10 +17,10 @@ public abstract class AbstractJobOpenTaskWorker implements JobOpenTaskWorker {
     }
 
     @Override
-    public void doTask() {
+    public void doTask() throws Exception{
         doTheTask();
         jobOpenTaskManager.deleteTask(jobOpenTask.getReference_id());
     }
 
-    abstract protected void doTheTask();
+    abstract protected void doTheTask() throws Exception;
 }

@@ -1,6 +1,7 @@
 package com.cron_manager.redis;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Transaction;
@@ -8,6 +9,7 @@ import redis.clients.jedis.Transaction;
 /**
  * Created by hongcheng on 4/14/15.
  */
+@Service
 public class RedisServiceJedis implements RedisService {
 
     @Autowired

@@ -12,7 +12,7 @@ public class JobOpenTask {
     int type;
     Timestamp created_datetime;
 
-    public final static int JOB_OPEN_TASK_TYPE_SCHEDULE = 101;
+    public final static int JOB_OPEN_TASK_TYPE_CREATE_SCHEDULE = 101;
 
     public long getId() {
         return id;
