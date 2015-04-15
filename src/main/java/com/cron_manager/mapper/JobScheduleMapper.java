@@ -13,7 +13,7 @@ public interface JobScheduleMapper {
     @Insert("insert into job_schedule (created_datetime, schedule_datetime, timezone, job_id, job_group_name, run_as) " +
             "values(#{created_datetime}, #{schedule_datetime}, #{timezone}, #{job_id}, #{job_group_name}, #{run_as})")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
-    public long insert(JobSchedule jobSchedule);
+    public void insert(JobSchedule jobSchedule);
 
     @Update("update job_schedule set status = #{status} where id = #{id}")
     public void updateStatus(@Param("id") long id, @Param("status")int status);

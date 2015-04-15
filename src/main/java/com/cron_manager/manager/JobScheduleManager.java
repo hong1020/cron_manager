@@ -1,13 +1,16 @@
 package com.cron_manager.manager;
 
 import com.cron_manager.mapper.JobMapper;
+import com.cron_manager.mapper.JobOpenTaskMapper;
 import com.cron_manager.mapper.JobScheduleMapper;
 import com.cron_manager.model.Job;
 import com.cron_manager.model.JobGroup;
+import com.cron_manager.model.JobOpenTask;
 import com.cron_manager.model.JobSchedule;
 import com.cron_manager.scheduler.ScheduleTime;
 import com.cron_manager.scheduler.ScheduleTimeQuartz;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
@@ -16,6 +19,7 @@ import java.util.Date;
 /**
  * Created by hongcheng on 4/12/15.
  */
+@Service
 public class JobScheduleManager {
     ScheduleTime scheduleTime = new ScheduleTimeQuartz();
 
@@ -24,6 +28,9 @@ public class JobScheduleManager {
 
     @Autowired
     JobMapper jobMapper;
+
+    @Autowired
+    JobOpenTaskMapper jobOpenTaskMapper;
 
     @Transactional
     public JobSchedule createJobSchedule(Job job) {
@@ -71,7 +78,13 @@ public class JobScheduleManager {
         jobSchedule.setJob_id(job.getId());
         jobSchedule.setJob_group_name(job.getJob_group_name());
         jobSchedule.setRun_as(job.getRun_as());
-        jobSchedule.setId(jobScheduleMapper.insert(jobSchedule));
+        jobScheduleMapper.insert(jobSchedule);
+
+        JobOpenTask jobOpenTask = new JobOpenTask();
+        jobOpenTask.setJob_id(job.getId());
+        jobOpenTask.setReference_id(jobSchedule.getId());
+        jobOpenTask.setType(JobOpenTask.JOB_OPEN_TASK_TYPE_SCHEDULE);
+        jobOpenTaskMapper.insert(jobOpenTask);
 
         return jobSchedule;
     }

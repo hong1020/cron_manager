@@ -16,6 +16,7 @@ CREATE TABLE `job` (
     `created_date` date,
     `enable_date` date,
     `last_modified_by` varchar(64),
+    `last_modified_date` date,
     `created_by` varchar(64),
     PRIMARY KEY(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -62,5 +63,16 @@ CREATE TABLE `job_script` (
     `job_id` bigint(20) NOT NULL,
     `script` text NOT NULL,
     PRIMARY KEY(`job_id`),
+)ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `job_open_task` (
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
+    `job_id` bigint(20) NOT NULL,
+    `reference_id` bigint(20) NOT NULL,
+    `type` int(8) NOT NULL,
+    `created_datetime` DATETIME NOT NULL,
+    PRIMARY KEY(`id`),
+    INDEX index_job (job_id),
+    INDEX index_reference (reference_id)
 )ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

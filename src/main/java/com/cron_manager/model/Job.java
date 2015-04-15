@@ -23,6 +23,7 @@ public class Job {
     Date created_date;
     Date enable_date;
     String last_modified_by;
+    Date last_modified_date;
     String created_by;
 
     public static final int JOB_STATUS_INACTIVE = 0;
@@ -171,6 +172,14 @@ public class Job {
 
     public void setLast_modified_by(String last_modified_by) {
         this.last_modified_by = last_modified_by;
+    }
+
+    public Date getLast_modified_date() {
+        return last_modified_date;
+    }
+
+    public void setLast_modified_date(Date last_modified_date) {
+        this.last_modified_date = last_modified_date;
     }
 
     public String getCreated_by() {
