@@ -24,6 +24,9 @@ public interface JobMapper {
             "where id = #{id}")
     public void update(Job job);
 
+    @Update("update job set cron_expression = #{expression} where id = #{id}")
+    public void updateCronExpression(@Param("id")long id, @Param("expression") String expression);
+
     @Update("update job set last_schedule_id = #{scheduleId} where id = #{id}")
     public void updateSchedule(@Param("id")long id, @Param("scheduleId")long scheduleId);
 

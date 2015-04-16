@@ -18,7 +18,7 @@ public class ScheduleTimeQuartz implements ScheduleTime{
     public Timestamp getNextScheduleTime(Job job, Date dateTime) {
         try {
             CronExpression cronExpression = new CronExpression(job.getCron_expression());
-            TimeZone timeZone = TimeZone.getTimeZone(TimeZone.getAvailableIDs(job.getTimezone())[0]);
+            TimeZone timeZone = TimeZone.getTimeZone(job.getTimezone());
             cronExpression.setTimeZone(timeZone);
 
             Date nextDate = cronExpression.getTimeAfter(dateTime);

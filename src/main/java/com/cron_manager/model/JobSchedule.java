@@ -20,6 +20,7 @@ public class JobSchedule {
     public static final int JOB_SCHEDULE_STATUS_RUNNING = 1;
     public static final int JOB_SCHEDULE_STATUS_SUCCESS = 2;
     public static final int JOB_SCHEDULE_STATUS_FAILED = 3;
+    public static final int JOB_SCHEDULE_STATUS_CANCELLED = 4;
 
     public long getId() {
         return id;

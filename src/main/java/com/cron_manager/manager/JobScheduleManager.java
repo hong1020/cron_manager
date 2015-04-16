@@ -37,6 +37,14 @@ public class JobScheduleManager {
         return jobScheduleMapper.findById(id);
     }
 
+    @Transactional(readOnly = true)
+    public int getStatus(long id) {return jobScheduleMapper.getStatus(id);}
+
+    @Transactional
+    public void updateStatus(long id, int status) {
+        jobScheduleMapper.updateStatus(id, status);
+    }
+
     @Transactional
     public JobSchedule createJobSchedule(Job job) {
         JobSchedule jobSchedule = doCreateJobSchedule(job, new Date(System.currentTimeMillis()));

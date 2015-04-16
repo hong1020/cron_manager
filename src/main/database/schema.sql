@@ -3,7 +3,7 @@ CREATE TABLE `job` (
     `title` varchar(64) NOT NULL,
     `description` varchar(256) DEFAULT '',
     `cron_expression` varchar(128) NOT NULL,
-    `time_zone` int(8) DEFAULT 8,
+    `time_zone` varchar(32) NOT NULL,
     `timeout` int(16) DEFAULT 0,
     `retry` int(8) DEFAULT 0,
     `retry_interval` int(8) DEFAULT 0,

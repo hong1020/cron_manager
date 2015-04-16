@@ -10,7 +10,7 @@ public class Job {
     String title;
     String description;
     String cron_expression;
-    int timezone;
+    String timezone;
     int timeout;
     int retry;
     int retry_interval;
@@ -70,11 +70,11 @@ public class Job {
         this.cron_expression = cron_expression;
     }
 
-    public int getTimezone() {
+    public String getTimezone() {
         return timezone;
     }
 
-    public void setTimezone(int timezone) {
+    public void setTimezone(String timezone) {
         this.timezone = timezone;
     }
 

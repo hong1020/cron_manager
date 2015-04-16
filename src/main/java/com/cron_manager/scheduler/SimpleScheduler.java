@@ -29,10 +29,19 @@ public class SimpleScheduler implements Scheduler,Runnable {
         this.jobScheduleQueue = jobScheduleQueue;
     }
 
-    @Override
-    public void run() {
+    public void register() throws Exception{
         //register the schedule group
         jobScheduleQueue.addScheduleGroup(schedulerGroup);
+    }
+
+    @Override
+    public void run() {
+        try {
+            register();
+        } catch (Exception e) {
+            logger.error("simple scheduler can not start.");
+            return;
+        }
 
         while (!Thread.currentThread().isInterrupted()) {
             schedule(jobScheduleQueue, schedulerGroup);
@@ -52,16 +61,20 @@ public class SimpleScheduler implements Scheduler,Runnable {
             try {
                 JobSchedule jobSchedule = jobScheduleQueue.offerSchedule(schedulerGroup);
                 if (jobSchedule != null && isNeedSchedule(jobSchedule)) {
-                    logger.info("start schedule for " + jobSchedule.getId());
+                    logger.info("start schedule for " + jobSchedule.getId() + " on " + jobSchedule.getSchedule_datetime());
                     try {
-                        JobSchedule nextJobSchedule = jobScheduleManager.createNextSchedule(jobSchedule);
-                        if (nextJobSchedule != null) {
-                            jobScheduleQueue.addSchedule(schedulerGroup, nextJobSchedule);
-                            jobScheduleQueue.moveScheduleToExecute(schedulerGroup, jobSchedule);
-                            logger.info("successful schedule for " + jobSchedule.getId());
+                        if (jobScheduleManager.getStatus(jobSchedule.getId()) == JobSchedule.JOB_SCHEDULE_STATUS_PENDING ) {
+                            JobSchedule nextJobSchedule = jobScheduleManager.createNextSchedule(jobSchedule);
+                            if (nextJobSchedule != null) {
+                                jobScheduleQueue.addSchedule(schedulerGroup, nextJobSchedule);
+                                jobScheduleQueue.moveScheduleToExecute(schedulerGroup, jobSchedule);
+                                logger.info("successful schedule for " + jobSchedule.getId() + " on " + jobSchedule.getSchedule_datetime());
+                            }
+                        } else {
+                            logger.info("skip schedule for " + jobSchedule.getId() + " on " + jobSchedule.getSchedule_datetime());
                         }
                     } catch (Exception e) {
-                        logger.info("failed schedule for " + jobSchedule.getId() + " " + e.getMessage());
+                        logger.error("failed schedule for " + jobSchedule.getId() + " on " + jobSchedule.getSchedule_datetime() + " error is" + e.getMessage());
                         throw e;
                     }
                 } else {
@@ -69,7 +82,7 @@ public class SimpleScheduler implements Scheduler,Runnable {
                 }
             } catch (Exception e) {
                 retried--;
-                logger.info("schedule error of group: " + schedulerGroup + " " + e.getMessage());
+                logger.error("schedule error of group: " + schedulerGroup + " " + e.getMessage());
             }
         }
     }

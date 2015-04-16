@@ -8,6 +8,9 @@ import com.cron_manager.queue.JobScheduleQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * Created by honcheng on 2015/4/15.
  */
@@ -28,8 +31,16 @@ public class JobScheduleChangeManager {
      * @param job
      */
     public void activateJob(Job job) {
-        JobSchedule jobSchedule = jobManager.activate(job);
+        JobSchedule jobSchedule = jobManager.activateInternal(job);
+        tryAddSchedule(jobSchedule);
+    }
 
+    public void rescheduleJob(Job job, String cronExpression) {
+        JobSchedule jobSchedule = jobManager.rescheduleInternal(job, cronExpression);
+        tryAddSchedule(jobSchedule);
+    }
+
+    private void tryAddSchedule(JobSchedule jobSchedule) {
         int retry = 3;
         while (retry > 0) {
             try {
@@ -51,8 +62,8 @@ public class JobScheduleChangeManager {
         jobScheduleQueue.addSchedule(getScheduleGroup(jobSchedule), jobSchedule);
     }
 
-    private String getScheduleGroup(JobSchedule jobSchedule) {
-        //TODO
-        return null;
+    private String getScheduleGroup(JobSchedule jobSchedule) throws Exception {
+       List<String> groupList = jobScheduleQueue.getScheduleGroupList();
+        return groupList.get((int)(jobSchedule.getId() % groupList.size()));
     }
 }

@@ -3,6 +3,7 @@ package com.cron_manager.queue;
 import com.cron_manager.model.JobSchedule;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by honcheng on 2015/4/13.
@@ -18,8 +19,8 @@ public interface JobScheduleQueue {
     public JobSchedule offerSchedule(String scheduleGroup) throws Exception;;
     public JobSchedule takeSchedule(String scheduleGroup) throws Exception;;
 
-    public void addScheduleGroup(String scheduleGroup);
-    public List<String> getScheduleGroupList(String scheduleGroup);
+    public void addScheduleGroup(String scheduleGroup) throws Exception;
+    public List<String> getScheduleGroupList() throws Exception;
 
     /**
      * Idempotence. Atomic.

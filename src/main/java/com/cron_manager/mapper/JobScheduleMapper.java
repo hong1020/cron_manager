@@ -10,6 +10,9 @@ public interface JobScheduleMapper {
     @Select("select * from job_schedule where id = #{id}")
     public JobSchedule findById(@Param("id") long id);
 
+    @Select("select status from job_schedule where id = #{id}")
+    public int getStatus(@Param("id")long id);
+
     @Insert("insert into job_schedule (created_datetime, schedule_datetime, timezone, job_id, job_group_name, run_as) " +
             "values(#{created_datetime}, #{schedule_datetime}, #{timezone}, #{job_id}, #{job_group_name}, #{run_as})")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")

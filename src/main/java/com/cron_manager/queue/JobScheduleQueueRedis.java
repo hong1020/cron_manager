@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -22,6 +24,7 @@ import java.util.Set;
 public class JobScheduleQueueRedis implements  JobScheduleQueue {
     public static final String KEY_SCHEDULE = "schedule";
     public static final String KEY_EXECUTE = "execute";
+    public static final String KEY_SCHEDULE_GROUP = "schedule_group";
 
     public static String getScheduleGroupKey(String group) {
         return KEY_SCHEDULE + ":" + group;
@@ -30,6 +33,8 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
     public static String getExecuteGroupKey(String group) {
         return KEY_EXECUTE + ":" + group;
     }
+
+    public static String getScheduleGroupSetKey() {return KEY_SCHEDULE_GROUP;}
 
     @Autowired
     RedisService redisService;
@@ -83,13 +88,28 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
     }
 
     @Override
-    public void addScheduleGroup(String scheduleGroup) {
-
+    public void addScheduleGroup(final String scheduleGroup) throws Exception{
+        RedisCommand command = new RedisCommand() {
+            @Override
+            public Object call(Jedis jedis) throws Exception {
+                return jedis.sadd(getScheduleGroupSetKey(), scheduleGroup);
+            }
+        };
+        redisService.executeCommand(command);
     }
 
     @Override
-    public List<String> getScheduleGroupList(String scheduleGroup) {
-        return null;
+    public List<String> getScheduleGroupList() throws Exception{
+        RedisCommand command = new RedisCommand() {
+            @Override
+            public Object call(Jedis jedis) throws Exception {
+                return jedis.smembers(getScheduleGroupSetKey());
+            }
+        };
+        Set<String> set = (Set<String>) redisService.executeCommand(command);
+        List<String> list = new ArrayList<String>(set);
+        Collections.sort(list);
+        return list;
     }
 
     @Override
