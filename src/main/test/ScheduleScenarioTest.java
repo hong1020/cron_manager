@@ -7,6 +7,7 @@ import com.cron_manager.scheduler.Scheduler;
 import com.cron_manager.scheduler.SimpleScheduler;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Date;
 import java.util.concurrent.Executor;
@@ -20,8 +21,7 @@ public class ScheduleScenarioTest {
      * scenario test: create job, activate, deactivate, delete.
      */
     public void testScenarioJobBasic() throws Exception {
-        //TODO
-        ApplicationContext applicationContext = null;
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("spring/testApplicationContext.xml");
 
         SimpleScheduler simpleScheduler = new SimpleScheduler("s1",
                 applicationContext.getBean(JobScheduleManager.class),
