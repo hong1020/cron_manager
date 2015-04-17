@@ -10,10 +10,14 @@
      http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
 
-    <!-- in memory database -->
-    <jdbc:embedded-database id="dataSource">
-        <jdbc:script location="classpath:database/schema.sql"/>
-    </jdbc:embedded-database>
+    <!-- database -->
+    <bean id="dataSource"
+          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/TEST"/>
+        <property name="username" value="root"/>
+        <property name="password" value="19741116"/>
+    </bean>
 
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
@@ -31,7 +35,7 @@
 
     <context:component-scan base-package="com.cron_manager" />
 
-    <context:property-placeholder location="classpath:localRedis.properties"/>
+    <context:property-placeholder location="classpath:redis/localRedis.properties"/>
 
     <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
         <property name="maxActive" value="${redis.pool.maxActive}"/>

@@ -1,3 +1,5 @@
+DROP TABLE if exists job, job_group, job_schedule, job_script, job_transaction, job_open_task;
+
 CREATE TABLE `job` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
     `title` varchar(64) NOT NULL,
@@ -31,8 +33,7 @@ CREATE TABLE `job_group` (
 CREATE TABLE `job_schedule` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
     `created_datetime` DATETIME NOT NULL,
-    `schedule_datetime` DATETIME NOT NULL
-    `time_zone` int(8) DEFAULT 0,
+    `schedule_datetime` DATETIME NOT NULL,
     `job_id` bigint(20) NOT NULL,
     `job_group_name` varchar(64) NOT NULL,
     `status` int(8) NOT NULL,
@@ -47,7 +48,7 @@ CREATE TABLE `job_transaction` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
     `start_datetime` DATETIME NOT NULL,
     `end_datetime` DATETIME NOT NULL,
-    `time_zone` int(8) DATETIME 0,
+    `time_zone` varchar(32) NOT NULL,
     `job_id` bigint(20) NOT NULL,
      `job_schedule_id` bigint(20) NOT NULL,
     `host` varchar(64),
@@ -62,8 +63,8 @@ CREATE TABLE `job_transaction` (
 CREATE TABLE `job_script` (
     `job_id` bigint(20) NOT NULL,
     `script` text NOT NULL,
-    PRIMARY KEY(`job_id`),
-)ENGINE=InnoDB DEFAULT CHARSET=latin1;
+    PRIMARY KEY(`job_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `job_open_task` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -74,5 +75,5 @@ CREATE TABLE `job_open_task` (
     PRIMARY KEY(`id`),
     INDEX index_job (job_id),
     INDEX index_reference (reference_id)
-)ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
