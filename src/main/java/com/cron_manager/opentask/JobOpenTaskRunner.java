@@ -22,6 +22,11 @@ public class JobOpenTaskRunner implements Runnable {
             try {
                 List<JobOpenTask> openTaskList = jobOpenTaskManager.getOpenTasks();
                 for (JobOpenTask jobOpenTask : openTaskList) {
+                    if (jobOpenTask.getCreated_datetime().getTime() - System.currentTimeMillis() > -10000) {
+                        //less than 10 seconds
+                        continue;
+                    }
+
                     JobOpenTaskWorker worker = jobOpenTaskWorkerFactory.getJobOpenTaskWorker(jobOpenTask);
                     try {
                         worker.doTask();

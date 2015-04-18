@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface JobOpenTaskMapper {
 
-    @Insert("insert into job_open_task (job_id, reference_id, type) values (#{job_id},#{reference_id}, #{type})")
+    @Insert("insert into job_open_task (job_id, reference_id, type, created_datetime) values (#{job_id},#{reference_id}, #{type}, #{created_datetime})")
     public void insert(JobOpenTask jobOpenTask);
 
     @Delete("delete from job_open_task where reference_id = #{referenceId}")

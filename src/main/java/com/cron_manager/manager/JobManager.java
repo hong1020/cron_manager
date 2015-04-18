@@ -44,40 +44,49 @@ public class JobManager {
     //TODO - reschedule
 
     @Transactional
-    public void delete(Job job) {
-        deactivate(job);
-        jobMapper.delete(job.getId());
+    public void delete(long id) {
+        deactivate(id);
+        jobMapper.delete(id);
     }
 
     /**
      * This job only handles activating in the database. Job is not scheduled yet in the queue.
      *
-     * @param job
+     * @param id
      * @return
      */
     @Transactional
-    public JobSchedule activateInternal(Job job) {
-        jobMapper.updateStatus(job.getId(), Job.JOB_STATUS_ACTIVE);
-        JobSchedule schedule = jobScheduleManager.createJobSchedule(job);
+    public JobSchedule activateInternal(long id) {
+        //TODO - cr is the select necessary?
+        Job job = jobMapper.findByIdForUpdate(id);
+        job.setStatus(Job.JOB_STATUS_ACTIVE);
+        jobMapper.updateStatus(id, job.getStatus());
+        JobSchedule schedule = jobScheduleManager.createJobScheduleInternal(job);
         return schedule;
     }
 
     @Transactional
-    public void deactivate(Job job) {
-        jobMapper.updateStatus(job.getId(), Job.JOB_STATUS_INACTIVE);
-        if (job.getLast_schedule_id() != 0) {
-            jobScheduleManager.updateStatus(job.getLast_schedule_id(), JobSchedule.JOB_SCHEDULE_STATUS_CANCELLED);
+    public void deactivate(long id) {
+        //TODO - will update already lock the record?
+        jobMapper.updateStatus(id, Job.JOB_STATUS_INACTIVE);
+        Job job = jobMapper.findByIdForUpdate(id);
+        long lastScheduleId = job.getLast_schedule_id();
+        if (lastScheduleId != 0) {
+            jobScheduleManager.updateStatus(lastScheduleId, JobSchedule.JOB_SCHEDULE_STATUS_CANCELLED);
         }
     }
 
     @Transactional
-    public JobSchedule rescheduleInternal(Job job, String cronExpression) {
+    public JobSchedule rescheduleInternal(long id, String cronExpression) {
+        //TODO - is for update necessary?
+        Job job = jobMapper.findByIdForUpdate(id);
         job.setCron_expression(cronExpression);
-        jobMapper.updateCronExpression(job.getId(), job.getCron_expression());
-        if (job.getLast_schedule_id() != 0) {
-            jobScheduleManager.updateStatus(job.getLast_schedule_id(), JobSchedule.JOB_SCHEDULE_STATUS_CANCELLED);
+        jobMapper.updateCronExpression(id, cronExpression);
+        long lastScheduleId = job.getLast_schedule_id();
+        if (lastScheduleId != 0) {
+            jobScheduleManager.updateStatus(lastScheduleId, JobSchedule.JOB_SCHEDULE_STATUS_CANCELLED);
         }
-        JobSchedule schedule = jobScheduleManager.createJobSchedule(job);
+        JobSchedule schedule = jobScheduleManager.createJobScheduleInternal(job);
         return schedule;
     }
 }

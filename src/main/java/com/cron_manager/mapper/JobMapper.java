@@ -10,10 +10,13 @@ public interface JobMapper {
     @Select("select * from job where id = #{id}")
     public Job findById(@Param("id") long id);
 
-    @Insert("insert into job (title，description，cron_description，timezone，timeout," +
-            "retry，retry_interval，run_type，fail_strategy, job_group_id, status, run_as, created_date, created_by)" +
-            "values(#{title}，#{description}，#{cron_description}，#{timezone}，#{timeout}," +
-            "#{retry}，#{retry_interval}，#{run_type}，#{fail_strategy}, #{job_group_id}," +
+    @Select("select * from job where id = #{id} for update")
+    public Job findByIdForUpdate(@Param("id") long id);
+
+    @Insert("insert into job (title,description,cron_expression,timezone,timeout," +
+            "retry,retry_interval,run_type,fail_strategy, job_group_name, status, run_as, created_date, created_by)" +
+            "values(#{title},#{description},#{cron_expression},#{timezone},#{timeout}," +
+            "#{retry},#{retry_interval},#{run_type},#{fail_strategy}, #{job_group_name}," +
             "#{status}, #{run_as}, #{created_date}, #{created_by})")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     public void insert(Job job);
@@ -32,6 +35,12 @@ public interface JobMapper {
 
     @Update("update job set status = #{status} where id = #{id}")
     public void updateStatus(@Param("id")long id, @Param("status") int status);
+
+    @Select("select last_schedule_id from job where id = #{id}")
+    public long getLastScheduleId(@Param("id")long id);
+
+    @Select("select status from job where id = #{id}")
+    public int getStatus(@Param("id")long id);
 
     @Delete("delete from job where id = #{id}")
     public void delete(@Param("id")long id);

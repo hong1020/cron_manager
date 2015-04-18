@@ -21,6 +21,7 @@ public class JobSchedule {
     public static final int JOB_SCHEDULE_STATUS_SUCCESS = 2;
     public static final int JOB_SCHEDULE_STATUS_FAILED = 3;
     public static final int JOB_SCHEDULE_STATUS_CANCELLED = 4;
+    //public static final int JOB_SCHEDULE_STATUS_SCHEDULED = 5;
 
     public long getId() {
         return id;

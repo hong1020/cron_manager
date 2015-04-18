@@ -63,14 +63,15 @@ public class SimpleScheduler implements Scheduler,Runnable {
                 if (jobSchedule != null && isNeedSchedule(jobSchedule)) {
                     logger.info("start schedule for " + jobSchedule.getId() + " on " + jobSchedule.getSchedule_datetime());
                     try {
-                        if (jobScheduleManager.getStatus(jobSchedule.getId()) == JobSchedule.JOB_SCHEDULE_STATUS_PENDING ) {
-                            JobSchedule nextJobSchedule = jobScheduleManager.createNextSchedule(jobSchedule);
+                        if (jobScheduleManager.getStatus(jobSchedule.getId()) == JobSchedule.JOB_SCHEDULE_STATUS_PENDING) {
+                            JobSchedule nextJobSchedule = jobScheduleManager.createNextSchedule(jobSchedule.getId());
                             if (nextJobSchedule != null) {
                                 jobScheduleQueue.addSchedule(schedulerGroup, nextJobSchedule);
                                 jobScheduleQueue.moveScheduleToExecute(schedulerGroup, jobSchedule);
                                 logger.info("successful schedule for " + jobSchedule.getId() + " on " + jobSchedule.getSchedule_datetime());
                             }
                         } else {
+                            jobScheduleQueue.removeSchedule(schedulerGroup, jobSchedule);
                             logger.info("skip schedule for " + jobSchedule.getId() + " on " + jobSchedule.getSchedule_datetime());
                         }
                     } catch (Exception e) {

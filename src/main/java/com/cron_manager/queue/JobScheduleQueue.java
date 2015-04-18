@@ -17,7 +17,8 @@ public interface JobScheduleQueue {
     public void addSchedule(String scheduleGroup, JobSchedule jobSchedule) throws Exception;
 
     public JobSchedule offerSchedule(String scheduleGroup) throws Exception;;
-    public JobSchedule takeSchedule(String scheduleGroup) throws Exception;;
+    public JobSchedule takeSchedule(String scheduleGroup) throws Exception;
+    public void removeSchedule(String scheduleGroup, JobSchedule jobSchedule) throws Exception;
 
     public void addScheduleGroup(String scheduleGroup) throws Exception;
     public List<String> getScheduleGroupList() throws Exception;

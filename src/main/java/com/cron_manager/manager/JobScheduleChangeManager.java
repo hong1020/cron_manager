@@ -31,12 +31,12 @@ public class JobScheduleChangeManager {
      * @param job
      */
     public void activateJob(Job job) {
-        JobSchedule jobSchedule = jobManager.activateInternal(job);
+        JobSchedule jobSchedule = jobManager.activateInternal(job.getId());
         tryAddSchedule(jobSchedule);
     }
 
     public void rescheduleJob(Job job, String cronExpression) {
-        JobSchedule jobSchedule = jobManager.rescheduleInternal(job, cronExpression);
+        JobSchedule jobSchedule = jobManager.rescheduleInternal(job.getId(), cronExpression);
         tryAddSchedule(jobSchedule);
     }
 

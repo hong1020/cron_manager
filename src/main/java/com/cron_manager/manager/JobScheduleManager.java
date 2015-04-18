@@ -45,34 +45,39 @@ public class JobScheduleManager {
         jobScheduleMapper.updateStatus(id, status);
     }
 
+    /**
+     * Job should be locked before call this.
+     * @param job
+     * @return
+     */
     @Transactional
-    public JobSchedule createJobSchedule(Job job) {
+    public JobSchedule createJobScheduleInternal(Job job) {
         JobSchedule jobSchedule = doCreateJobSchedule(job, new Date(System.currentTimeMillis()));
         if (jobSchedule != null) {
-            jobMapper.updateSchedule(jobSchedule.getJob_id(), jobSchedule.getId());
+            jobMapper.updateSchedule(job.getId(), jobSchedule.getId());
         }
         return jobSchedule;
     }
 
     /**
      *  Should be idempotence.
-     * @param jobSchedule
+     * @param scheduleId
      * @return
      */
     @Transactional
-    public JobSchedule createNextSchedule(JobSchedule jobSchedule) {
-        JobSchedule curJobSchedule = jobScheduleMapper.findById(jobSchedule.getId());
+    public JobSchedule createNextSchedule(long scheduleId) {
+        JobSchedule curJobSchedule = jobScheduleMapper.findById(scheduleId);
         if (curJobSchedule != null && curJobSchedule.getNext_job_schedule_id() != 0) {
             //already scheduled
             return jobScheduleMapper.findById(curJobSchedule.getNext_job_schedule_id());
         }
 
-        Job job = jobMapper.findById(jobSchedule.getJob_id());
+        Job job = jobMapper.findByIdForUpdate(curJobSchedule.getJob_id());
         if (job != null) {
-            JobSchedule nextJobSchedule = doCreateJobSchedule(job, jobSchedule.getSchedule_datetime());
+            JobSchedule nextJobSchedule = doCreateJobSchedule(job, curJobSchedule.getSchedule_datetime());
             if (nextJobSchedule != null) {
-                jobScheduleMapper.updateNextScheduleId(jobSchedule.getId(), nextJobSchedule.getId());
-                jobMapper.updateSchedule(jobSchedule.getJob_id(), jobSchedule.getId());
+                jobScheduleMapper.updateNextScheduleId(curJobSchedule.getId(), nextJobSchedule.getId());
+                jobMapper.updateSchedule(curJobSchedule.getJob_id(), nextJobSchedule.getId());
                 return nextJobSchedule;
             }
         }
@@ -91,12 +96,14 @@ public class JobScheduleManager {
         jobSchedule.setJob_id(job.getId());
         jobSchedule.setJob_group_name(job.getJob_group_name());
         jobSchedule.setRun_as(job.getRun_as());
+        jobSchedule.setStatus(JobSchedule.JOB_SCHEDULE_STATUS_PENDING);
         jobScheduleMapper.insert(jobSchedule);
 
         JobOpenTask jobOpenTask = new JobOpenTask();
         jobOpenTask.setJob_id(job.getId());
         jobOpenTask.setReference_id(jobSchedule.getId());
         jobOpenTask.setType(JobOpenTask.JOB_OPEN_TASK_TYPE_CREATE_SCHEDULE);
+        jobOpenTask.setCreated_datetime(new Timestamp(System.currentTimeMillis()));
         jobOpenTaskMapper.insert(jobOpenTask);
 
         return jobSchedule;

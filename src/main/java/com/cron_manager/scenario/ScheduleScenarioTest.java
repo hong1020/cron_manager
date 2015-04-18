@@ -82,13 +82,18 @@ public class ScheduleScenarioTest {
         Thread.sleep(100000);
         System.out.println("schedule end");
 
-        System.out.println("deactivate job");
-        jobManager.deactivate(insertedJob);
+        System.out.println("reschedule");
+        jobScheduleChangeManager.rescheduleJob(insertedJob, "1/10 * * * * ?");
         //schedule for 100s
         Thread.sleep(100000);
 
-        System.out.println("delete Job:");
-        jobManager.delete(insertedJob);
+        System.out.println("deactivate job");
+        jobManager.deactivate(insertedJob.getId());
+        //schedule for 100s
+        Thread.sleep(100000);
+
+        //System.out.println("delete Job:");
+        //jobManager.delete(insertedJob.getId());
     }
 
     public static void main(String[] args) {
