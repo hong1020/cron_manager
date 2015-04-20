@@ -57,7 +57,6 @@ public class JobManager {
      */
     @Transactional
     public JobSchedule activateInternal(long id) {
-        //TODO - cr is the select necessary?
         Job job = jobMapper.findByIdForUpdate(id);
         job.setStatus(Job.JOB_STATUS_ACTIVE);
         jobMapper.updateStatus(id, job.getStatus());
@@ -67,10 +66,8 @@ public class JobManager {
 
     @Transactional
     public void deactivate(long id) {
-        //TODO - will update already lock the record?
         jobMapper.updateStatus(id, Job.JOB_STATUS_INACTIVE);
-        Job job = jobMapper.findByIdForUpdate(id);
-        long lastScheduleId = job.getLast_schedule_id();
+        long lastScheduleId = jobMapper.getLastScheduleId(id);
         if (lastScheduleId != 0) {
             jobScheduleManager.updateStatus(lastScheduleId, JobSchedule.JOB_SCHEDULE_STATUS_CANCELLED);
         }
@@ -78,7 +75,6 @@ public class JobManager {
 
     @Transactional
     public JobSchedule rescheduleInternal(long id, String cronExpression) {
-        //TODO - is for update necessary?
         Job job = jobMapper.findByIdForUpdate(id);
         job.setCron_expression(cronExpression);
         jobMapper.updateCronExpression(id, cronExpression);
