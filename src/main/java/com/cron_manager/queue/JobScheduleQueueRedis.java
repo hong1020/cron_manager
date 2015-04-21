@@ -106,6 +106,20 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
     }
 
     @Override
+    public void moveScheduleToExecute(final String scheduleGroup, final JobSchedule jobSchedule) throws Exception {
+        final double timeScore = jobSchedule.getSchedule_datetime().getTime();
+        final String jobScheduleJson = scheduleToString(jobSchedule);
+        RedisTransactionCommand command = new RedisTransactionCommand() {
+            @Override
+            public void call(Transaction transaction) {
+                transaction.zadd(getExecuteGroupKey(jobSchedule.getJob_group_name()), timeScore, getScheduleValueKey(jobSchedule.getId()));
+                transaction.set(getScheduleValueKey(jobSchedule.getId()), jobScheduleJson);
+            }
+        };
+        redisService.executeTransactionCommand(command);
+    }
+
+    @Override
     public void addScheduleGroup(final String scheduleGroup) throws Exception{
         RedisCommand command = new RedisCommand() {
             @Override
@@ -128,18 +142,5 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
         List<String> list = new ArrayList<String>(set);
         Collections.sort(list);
         return list;
-    }
-
-    @Override
-    public void moveScheduleToExecute(final String scheduleGroup, final JobSchedule jobSchedule) throws Exception {
-        final String jobScheduleJson = scheduleToString(jobSchedule);
-        RedisTransactionCommand transactionCommand = new RedisTransactionCommand() {
-            @Override
-            public void call(Transaction transaction) {
-                transaction.zrem(getScheduleGroupKey(scheduleGroup), getScheduleValueKey(jobSchedule.getId()));
-                transaction.lpush(getExecuteGroupKey(jobSchedule.getJob_group_name()), getScheduleValueKey(jobSchedule.getId()));
-            };
-        };
-        redisService.executeTransactionCommand(transactionCommand);
     }
 }

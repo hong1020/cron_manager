@@ -1,4 +1,4 @@
-package com.cron_manager.queue;
+package com.cron_manager.client.queue;
 
 import com.cron_manager.model.Job;
 import com.cron_manager.model.JobSchedule;
