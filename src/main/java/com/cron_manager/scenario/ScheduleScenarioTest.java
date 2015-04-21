@@ -7,6 +7,7 @@ import com.cron_manager.model.Job;
 import com.cron_manager.queue.JobScheduleQueue;
 import com.cron_manager.redis.RedisCommand;
 import com.cron_manager.redis.RedisService;
+import com.cron_manager.scheduler.LocalScheduler;
 import com.cron_manager.scheduler.SimpleScheduler;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.context.ApplicationContext;
@@ -43,10 +44,7 @@ public class ScheduleScenarioTest {
         resourceDatabasePopulator.addScript(new ClassPathResource("database/schema.sql"));
         resourceDatabasePopulator.execute((DataSource)applicationContext.getBean("dataSource"));
 
-        SimpleScheduler simpleScheduler = new SimpleScheduler("s1",
-                applicationContext.getBean(JobScheduleManager.class),
-                applicationContext.getBean(JobScheduleQueue.class));
-        simpleScheduler.register();
+        LocalScheduler scheduler = new LocalScheduler("s1");
 
         JobManager jobManager = applicationContext.getBean(JobManager.class);
         Job job = new Job();
@@ -76,7 +74,7 @@ public class ScheduleScenarioTest {
         jobScheduleChangeManager.activateJob(insertedJob);
 
         System.out.println("schedule started");
-        Executors.newSingleThreadExecutor().submit(simpleScheduler);
+        Executors.newSingleThreadExecutor().submit(scheduler);
 
         //schedule for 100s
         Thread.sleep(100000);
@@ -92,6 +90,7 @@ public class ScheduleScenarioTest {
         //schedule for 100s
         Thread.sleep(100000);
 
+        System.out.println(scheduler.printState());
         //System.out.println("delete Job:");
         //jobManager.delete(insertedJob.getId());
     }

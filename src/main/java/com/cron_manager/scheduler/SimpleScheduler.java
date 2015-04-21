@@ -2,12 +2,10 @@ package com.cron_manager.scheduler;
 
 import com.cron_manager.manager.JobScheduleManager;
 import com.cron_manager.model.JobSchedule;
-import com.cron_manager.queue.JobExecuteQueue;
 
 import com.cron_manager.queue.JobScheduleQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Created by hongcheng on 4/12/15.
