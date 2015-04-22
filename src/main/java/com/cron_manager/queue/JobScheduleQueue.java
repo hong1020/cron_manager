@@ -29,4 +29,6 @@ public interface JobScheduleQueue {
      * @param jobSchedule
      */
     public void moveScheduleToExecute(String scheduleGroup, JobSchedule jobSchedule) throws Exception;
+
+    public boolean isSchedulePendingExecute(JobSchedule jobSchedule) throws Exception;
 }

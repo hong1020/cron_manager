@@ -1,6 +1,7 @@
 package com.cron_manager.scheduler;
 
 import com.cron_manager.manager.JobScheduleManager;
+import com.cron_manager.manager.SpringContextDelegate;
 import com.cron_manager.model.JobSchedule;
 import com.cron_manager.queue.JobScheduleQueue;
 
@@ -20,6 +21,13 @@ public class ScheduleEventJobCheckStart extends AbstractScheduleEvent {
 
     @Override
     public boolean handle() throws Exception {
+        JobScheduleQueue jobScheduleQueue = SpringContextDelegate.getBean(JobScheduleQueue.class);
+
+        //check if the schedule is still in queue
+        if (jobScheduleQueue.isSchedulePendingExecute(jobSchedule)) {
+            //check again after
+        }
+
         return false;
     }
 }

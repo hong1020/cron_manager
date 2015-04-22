@@ -45,6 +45,7 @@ public class ScheduleScenarioTest {
         resourceDatabasePopulator.execute((DataSource)applicationContext.getBean("dataSource"));
 
         LocalScheduler scheduler = new LocalScheduler("s1");
+        Executors.newSingleThreadExecutor().submit(scheduler);
 
         JobManager jobManager = applicationContext.getBean(JobManager.class);
         Job job = new Job();
@@ -74,7 +75,6 @@ public class ScheduleScenarioTest {
         jobScheduleChangeManager.activateJob(insertedJob);
 
         System.out.println("schedule started");
-        Executors.newSingleThreadExecutor().submit(scheduler);
 
         //schedule for 100s
         Thread.sleep(100000);

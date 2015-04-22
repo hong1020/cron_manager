@@ -63,7 +63,12 @@ public class JobScheduleChangeManager {
     }
 
     private String getScheduleGroup(JobSchedule jobSchedule) throws Exception {
-       List<String> groupList = jobScheduleQueue.getScheduleGroupList();
+        //TODO - how schedule group is HA?
+        List<String> groupList = jobScheduleQueue.getScheduleGroupList();
+        if (groupList == null || groupList.size() == 0) {
+            throw new Exception("no schedule group available.");
+        }
+
         return groupList.get((int)(jobSchedule.getId() % groupList.size()));
     }
 }

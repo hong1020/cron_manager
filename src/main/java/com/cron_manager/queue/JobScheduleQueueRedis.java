@@ -94,7 +94,6 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
 
     @Override
     public void removeSchedule(final String scheduleGroup, final JobSchedule jobSchedule) throws Exception{
-        final String jobScheduleJson = scheduleToString(jobSchedule);
         RedisTransactionCommand command = new RedisTransactionCommand() {
             @Override
             public void call(Transaction transaction) {
@@ -117,6 +116,17 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
             }
         };
         redisService.executeTransactionCommand(command);
+    }
+
+    @Override
+    public boolean isSchedulePendingExecute(final JobSchedule jobSchedule) throws Exception {
+        RedisCommand command = new RedisCommand() {
+            @Override
+            public Object call(Jedis jedis) throws Exception {
+                return jedis.zrank(getExecuteGroupKey(jobSchedule.getJob_group_name()), getScheduleValueKey(jobSchedule.getId()));
+            }
+        };
+        return redisService.executeCommand(command) != null;
     }
 
     @Override
