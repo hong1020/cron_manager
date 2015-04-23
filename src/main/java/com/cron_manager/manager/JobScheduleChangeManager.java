@@ -5,9 +5,12 @@ import com.cron_manager.mapper.JobOpenTaskMapper;
 import com.cron_manager.model.Job;
 import com.cron_manager.model.JobSchedule;
 import com.cron_manager.queue.JobScheduleQueue;
+import com.cron_manager.queue.model.ScheduleEvent;
+import com.cron_manager.scheduler.ScheduleEventJobScheduleEventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -44,7 +47,7 @@ public class JobScheduleChangeManager {
         int retry = 3;
         while (retry > 0) {
             try {
-                jobScheduleQueue.addSchedule(getScheduleGroup(jobSchedule), jobSchedule);
+                jobScheduleQueue.addScheduleEvent(getScheduleGroup(jobSchedule), new ScheduleEvent(jobSchedule.getId(), ScheduleEventJobScheduleEventType.SCHEDULE, new Date(jobSchedule.getSchedule_datetime().getTime() - 1000)));
                 jobOpenTaskManager.deleteTask(jobSchedule.getId());
                 break;
             } catch (Exception e) {
@@ -59,7 +62,7 @@ public class JobScheduleChangeManager {
      */
     public void reAddSchedule(long jobScheduleId) throws Exception{
         JobSchedule jobSchedule = jobScheduleManager.findById(jobScheduleId);
-        jobScheduleQueue.addSchedule(getScheduleGroup(jobSchedule), jobSchedule);
+        jobScheduleQueue.addScheduleEvent(getScheduleGroup(jobSchedule), new ScheduleEvent(jobSchedule.getId(), ScheduleEventJobScheduleEventType.SCHEDULE, new Date(jobSchedule.getSchedule_datetime().getTime() - 1000)));
     }
 
     private String getScheduleGroup(JobSchedule jobSchedule) throws Exception {
