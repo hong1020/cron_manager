@@ -4,6 +4,7 @@ import com.cron_manager.manager.JobScheduleManager;
 import com.cron_manager.manager.SpringContextDelegate;
 import com.cron_manager.model.JobSchedule;
 import com.cron_manager.queue.JobScheduleQueue;
+import com.cron_manager.queue.model.JobScheduleQueueModel;
 import com.cron_manager.queue.model.ScheduleEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +45,11 @@ public class ScheduleEventHandlerJobSchedule extends ScheduleEventHandler{
             nextScheduleEventList.add(nextScheduleEvent);
 
             //add check start run event
-            ScheduleEvent checkScheduleStartEvent = new ScheduleEvent(
+            ScheduleEvent checkScheduleRunEvent = new ScheduleEvent(
                     scheduleEvent.getJobScheduleId(),
-                    ScheduleEventJobScheduleEventType.CHECK_START_RUNNING,
-                    new Date(System.currentTimeMillis() + getCheckStartInterval()));
-            nextScheduleEventList.add(checkScheduleStartEvent);
+                    ScheduleEventJobScheduleEventType.CHECK_RUNNING,
+                    new Date(System.currentTimeMillis() + JobScheduleQueueModel.getCheckInterval(scheduleEvent)));
+            nextScheduleEventList.add(checkScheduleRunEvent);
 
             jobScheduleQueue.executeJobSchedule(scheduleGroup, scheduleEvent, jobSchedule, nextScheduleEventList);
             logger.info("schedule job schedule: " + scheduleEvent.toString());
@@ -59,9 +60,5 @@ public class ScheduleEventHandlerJobSchedule extends ScheduleEventHandler{
         }
 
         return true;
-    }
-
-    public long getCheckStartInterval() {
-        return 10000;
     }
 }

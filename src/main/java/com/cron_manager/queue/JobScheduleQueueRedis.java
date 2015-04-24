@@ -2,6 +2,7 @@ package com.cron_manager.queue;
 
 import com.cron_manager.model.Job;
 import com.cron_manager.model.JobSchedule;
+import com.cron_manager.queue.model.JobScheduleQueueModel;
 import com.cron_manager.queue.model.ScheduleEvent;
 import com.cron_manager.redis.RedisCommand;
 import com.cron_manager.redis.RedisException;
@@ -23,33 +24,6 @@ import java.util.*;
  */
 @Service
 public class JobScheduleQueueRedis implements  JobScheduleQueue {
-    public static final String KEY_SCHEDULE = "schedule";
-    public static final String KEY_EXECUTE = "execute";
-    public static final String KEY_SCHEDULE_GROUP = "schedule_group";
-    public static final String KEY_SCHEDULE_VALUE = "schedule_value";
-    public static final String KEY_SCHEDULE_EVENT_VALUE = "schedule_event_value";
-    public static final String KEY_SCHEDULE_EVENT_LOCK = "schedule_event_lock";
-
-    public static String getScheduleGroupKey(String group) {
-        return KEY_SCHEDULE + ":" + group;
-    }
-
-    public static String getExecuteGroupKey(String group) {
-        return KEY_EXECUTE + ":" + group;
-    }
-
-    public static String getScheduleGroupSetKey() {return KEY_SCHEDULE_GROUP;}
-
-    public static String getScheduleValueKey(long id) {return KEY_SCHEDULE_VALUE + ":" + id;}
-
-    public static String getScheduleEventKey(ScheduleEvent event) {
-        return KEY_SCHEDULE_EVENT_VALUE + ":" + event.getJobScheduleId() + ":" + event.getEventType();
-    }
-
-    public static String getScheduleEventLockKey(ScheduleEvent event) {
-        return KEY_SCHEDULE_EVENT_LOCK + ":" + event.getJobScheduleId() + ":" + event.getEventType();
-    }
-
     @Autowired
     RedisService redisService;
 
@@ -102,10 +76,42 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
 
     @Override
     public boolean tryLockScheduleEvent(final ScheduleEvent event, final String code) throws Exception {
+        return tryLock(JobScheduleQueueModel.getScheduleEventLockKey(event), code, getLockTimeout(event));
+    }
+
+    @Override
+    public boolean releaseLockScheduleEvent(ScheduleEvent event, String code) throws Exception {
+        return releaseLock(JobScheduleQueueModel.getScheduleEventLockKey(event), code);
+    }
+
+    public int getExecuteLockTimeout(String key) {return 5;}
+    @Override
+    public boolean tryLockExecuteJobSchedule(String key, String code) throws Exception {
+        return tryLock(JobScheduleQueueModel.getJobScheduleExecuteLockKey(key), code, getExecuteLockTimeout(key));
+    }
+
+    @Override
+    public boolean releaseLockExecuteJobSchedule(String key, String code) throws Exception {
+        return releaseLock(JobScheduleQueueModel.getJobScheduleExecuteLockKey(key), code);
+    }
+
+    @Override
+    public void removeExecuteJobSchedule(final String jobGroup, final String key) throws Exception {
+        RedisTransactionCommand command = new RedisTransactionCommand() {
+            @Override
+            public void call(Transaction transaction) throws Exception {
+                transaction.zrem(JobScheduleQueueModel.getExecuteGroupKey(jobGroup), key);
+                transaction.del(key);
+            }
+        };
+        redisService.executeTransactionCommand(command);
+    }
+
+    private boolean tryLock(final String key, final String code, final int timeout) throws Exception {
         RedisCommand command = new RedisCommand() {
             @Override
             public Object call(Jedis jedis) throws Exception {
-                return jedis.set(getScheduleEventLockKey(event), code, "NX", "EX", getLockTimeout(event));
+                return jedis.set(key, code, "NX", "EX", timeout);
             }
         };
         if (redisService.executeCommand(command) != null) {
@@ -114,28 +120,50 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
         return false;
     }
 
-    @Override
-    public boolean releaseLockScheduleEvent(ScheduleEvent event, String code) throws Exception {
-        RedisCommand command = getCommand(getScheduleEventLockKey(event));
+    private boolean releaseLock(final String key , final String code) throws Exception {
+        RedisCommand command = getCommand(key);
         String currentCode = (String)redisService.executeCommand(command);
         if (currentCode.equals(code)) {
             //still very few possibility to del other's lock
             //TODO - check watch perf impact
-            redisService.executeCommand(delCommand(getScheduleEventLockKey(event)));
+            redisService.executeCommand(delCommand(key));
             return true;
         }
         return false;
     }
 
-    @Override
+
+    //TODO
+    /*
     public boolean isSchedulePendingExecute(final JobSchedule jobSchedule) throws Exception {
         RedisCommand command = new RedisCommand() {
             @Override
             public Object call(Jedis jedis) throws Exception {
-                return jedis.zrank(getExecuteGroupKey(jobSchedule.getJob_group_name()), getScheduleValueKey(jobSchedule.getId()));
+                return jedis.zrank(JobScheduleQueueModel.getExecuteGroupKey(jobSchedule.getJob_group_name()), JobScheduleQueueModel.getScheduleValueKey(jobSchedule.getId()));
             }
         };
         return redisService.executeCommand(command) != null;
+    }
+    */
+
+    @Override
+    public void updateJobScheduleState(final long jobScheduleId, final int state, final int expire) throws Exception {
+        RedisCommand command = new RedisCommand() {
+            @Override
+            public Object call(Jedis jedis) throws Exception {
+                return jedis.setex(JobScheduleQueueModel.getJobScheduleExecuteStateKey(jobScheduleId), expire, String.valueOf(state));
+            }
+        };
+        redisService.executeCommand(command);
+    }
+
+    @Override
+    public int getJobScheduleState(final long joScheduleId) throws Exception {
+        String value = (String) redisService.executeCommand(getCommand(JobScheduleQueueModel.getJobScheduleExecuteStateKey(joScheduleId)));
+        if (value != null) {
+            return Integer.valueOf(value);
+        }
+        return -1;
     }
 
     @Override
@@ -151,20 +179,47 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
         redisService.executeTransactionCommand(command);
     }
 
+    @Override
+    public void updateScheduleEvent(final String scheduleGroup, final List<ScheduleEvent> oldScheduleEventList, final List<ScheduleEvent> newScheduleEventList) throws Exception {
+        RedisTransactionCommand transactionCommand = new RedisTransactionCommand() {
+            @Override
+            public void call(Transaction transaction) throws Exception {
+                for (ScheduleEvent event : oldScheduleEventList) {
+                    deleteScheduleEvent(scheduleGroup, transaction, event);
+                }
+                addEventsToTransaction(scheduleGroup, transaction, newScheduleEventList);
+            }
+        };
+        redisService.executeTransactionCommand(transactionCommand);
+    }
 
-    public int getTopRange() {return 5;}
+
+    public int getTopScheduleEventRange() {return 5;}
 
     @Override
     public List<ScheduleEvent> topScheduleEvents(final String scheduleGroup) throws Exception {
         RedisCommand command = new RedisCommand() {
             @Override
             public Object call(Jedis jedis) throws Exception {
-                return jedis.zrange(getScheduleGroupKey(scheduleGroup), 0, getTopRange());
+                return jedis.zrange(JobScheduleQueueModel.getScheduleGroupKey(scheduleGroup), 0, getTopScheduleEventRange());
             }
         };
         //this set is linked hash set which keeps sequence.
         Set<String> set = (Set<String>) (redisService.executeCommand(command));
         return getJobScheduleEventList(Lists.newArrayList(set));
+    }
+
+    public int getTopExecuteRange() {return 10;}
+    @Override
+    public List<String> topExecuteJobScheduleKeys(final String jobgroup) throws Exception {
+        RedisCommand command = new RedisCommand() {
+            @Override
+            public Object call(Jedis jedis) throws Exception {
+                return jedis.zrange(JobScheduleQueueModel.getExecuteGroupKey(jobgroup), 0, getTopExecuteRange());
+            }
+        };
+        Set<String> set = (Set<String>) (redisService.executeCommand(command));
+        return Lists.newArrayList(set);
     }
 
     @Override
@@ -188,7 +243,7 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
         RedisCommand command = new RedisCommand() {
             @Override
             public Object call(Jedis jedis) throws Exception {
-                return jedis.sadd(getScheduleGroupSetKey(), scheduleGroup);
+                return jedis.sadd(JobScheduleQueueModel.getScheduleGroupSetKey(), scheduleGroup);
             }
         };
         redisService.executeCommand(command);
@@ -199,7 +254,7 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
         RedisCommand command = new RedisCommand() {
             @Override
             public Object call(Jedis jedis) throws Exception {
-                return jedis.smembers(getScheduleGroupSetKey());
+                return jedis.smembers(JobScheduleQueueModel.getScheduleGroupSetKey());
             }
         };
         Set<String> set = (Set<String>) redisService.executeCommand(command);
@@ -254,20 +309,21 @@ public class JobScheduleQueueRedis implements  JobScheduleQueue {
     private void addEventsToTransaction(String scheduleGroup, Transaction transaction, List<ScheduleEvent> nexScheduleEventList) throws Exception {
         for (ScheduleEvent e : nexScheduleEventList) {
             double score = e.getEventScheduleTime().getTime();
-            transaction.zadd(getScheduleGroupKey(scheduleGroup), score, getScheduleEventKey(e));
-            transaction.set(getScheduleEventKey(e), scheduleEventToString(e));
+            transaction.zadd(JobScheduleQueueModel.getScheduleGroupKey(scheduleGroup), score, JobScheduleQueueModel.getScheduleEventKey(e));
+            transaction.set(JobScheduleQueueModel.getScheduleEventKey(e), scheduleEventToString(e));
         }
     }
 
     private void deleteScheduleEvent(String scheduleGroup, Transaction transaction, ScheduleEvent event) {
-        transaction.zrem(getScheduleGroupKey(scheduleGroup), getScheduleEventKey(event));
-        transaction.del(getScheduleEventKey(event));
+        transaction.zrem(JobScheduleQueueModel.getScheduleGroupKey(scheduleGroup), JobScheduleQueueModel.getScheduleEventKey(event));
+        transaction.del(JobScheduleQueueModel.getScheduleEventKey(event));
     }
 
     private void executeJobSchedule(Transaction transaction, JobSchedule jobSchedule) throws Exception{
         double timeScore = jobSchedule.getSchedule_datetime().getTime();
-        transaction.zadd(getExecuteGroupKey(jobSchedule.getJob_group_name()), timeScore, getScheduleValueKey(jobSchedule.getId()));
-        transaction.set(getScheduleValueKey(jobSchedule.getId()), scheduleToString(jobSchedule));
+        transaction.zadd(JobScheduleQueueModel.getExecuteGroupKey(jobSchedule.getJob_group_name()), timeScore, JobScheduleQueueModel.getScheduleValueKey(jobSchedule.getId()));
+        transaction.set(JobScheduleQueueModel.getScheduleValueKey(jobSchedule.getId()), scheduleToString(jobSchedule));
+        //set executing state
+        transaction.set(JobScheduleQueueModel.getJobScheduleExecuteStateKey(jobSchedule.getId()), String.valueOf(JobSchedule.JOB_SCHEDULE_STATUS_PENDINGEXECUTE));
     }
-
 }

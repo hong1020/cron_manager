@@ -27,8 +27,8 @@ public abstract class ScheduleEventHandler {
         switch (scheduleEvent.getEventType()) {
             case SCHEDULE:
                 return new ScheduleEventHandlerJobSchedule(scheduleGroup, scheduleEvent);
-            case CHECK_START_RUNNING:
-                return new ScheduleEventHandlerCheckStart(scheduleGroup, scheduleEvent);
+            case CHECK_RUNNING:
+                return new ScheduleEventHandlerCheckRunning(scheduleGroup, scheduleEvent);
 
         }
         return null;

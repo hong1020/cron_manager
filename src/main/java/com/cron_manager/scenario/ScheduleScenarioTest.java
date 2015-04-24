@@ -1,5 +1,6 @@
 package com.cron_manager.scenario;
 
+import com.cron_manager.client.queue.SimpleJobScheduleClient;
 import com.cron_manager.manager.JobManager;
 import com.cron_manager.manager.JobScheduleChangeManager;
 import com.cron_manager.manager.JobScheduleManager;
@@ -47,6 +48,12 @@ public class ScheduleScenarioTest {
 
         SimpleEventScheduler scheduler = new SimpleEventScheduler("s1");
         Executors.newSingleThreadExecutor().submit(scheduler);
+
+        SimpleJobScheduleClient client = new SimpleJobScheduleClient("t1");
+        Executors.newSingleThreadExecutor().submit(client);
+
+        SimpleJobScheduleClient client2 = new SimpleJobScheduleClient("t1");
+        Executors.newSingleThreadExecutor().submit(client2);
 
         JobManager jobManager = applicationContext.getBean(JobManager.class);
         Job job = new Job();
